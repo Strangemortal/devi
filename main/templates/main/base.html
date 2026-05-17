@@ -1,0 +1,148 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskAssign</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
+    <style>
+        .layout-wrapper {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        .sidebar {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .todo-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            margin-bottom: 0.5rem;
+            transition: 0.2s;
+        }
+        .todo-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .todo-checkbox {
+            margin-top: 0.25rem;
+            cursor: pointer;
+        }
+        .todo-text {
+            font-size: 0.9rem;
+            flex: 1;
+        }
+        .todo-completed .todo-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{% url 'home' %}" class="nav-brand">
+            <i class="fa-solid fa-layer-group"></i> TaskAssign
+        </a>
+        
+        <div class="nav-toggle" id="nav-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+
+        <ul class="nav-links" id="nav-links">
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'dashboard' %}"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                {% if user.is_superuser %}
+                    <li><a href="{% url 'superuser_dashboard' %}"><i class="fa-solid fa-shield-halved"></i> Superuser</a></li>
+                    <li><a href="{% url 'create_task' %}"><i class="fa-solid fa-plus"></i> Create Task</a></li>
+                {% endif %}
+                <li><a href="{% url 'task_list' %}"><i class="fa-solid fa-list"></i> All Tasks</a></li>
+                <li><a href="{% url 'logout' %}" class="btn btn-secondary"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}"><i class="fa-solid fa-right-to-bracket"></i> Login</a></li>
+                <li><a href="{% url 'register' %}" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    
+    <div class="layout-wrapper">
+        <div class="main-content">
+            <div class="container">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+
+        {% if user.is_authenticated %}
+        <aside class="sidebar">
+            <h3 style="font-size: 1.25rem; margin-bottom: 1rem;"><i class="fa-solid fa-clipboard-check"></i> Personal To-Do</h3>
+            
+            <form action="{% url 'add_todo' %}" method="POST" style="margin-bottom: 1.5rem;">
+                {% csrf_token %}
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" name="todo_text" placeholder="Quick add task..." required style="padding: 0.5rem; font-size: 0.85rem;">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.5rem 0.75rem;"><i class="fa-solid fa-plus"></i></button>
+                </div>
+            </form>
+
+            <div class="todo-list">
+                {% for todo in sidebar_todos %}
+                <div class="todo-item {% if todo.is_completed %}todo-completed{% endif %}">
+                    <a href="{% url 'toggle_todo' todo.id %}" class="todo-checkbox">
+                        {% if todo.is_completed %}
+                            <i class="fa-solid fa-square-check" style="color: var(--success-color);"></i>
+                        {% else %}
+                            <i class="fa-regular fa-square" style="color: var(--text-muted);"></i>
+                        {% endif %}
+                    </a>
+                    <div class="todo-text">
+                        {{ todo.text }}
+                        {% if todo.task %}
+                        <br>
+                        <small style="color: var(--accent-color); font-size: 0.75rem;">
+                            <a href="{% url 'task_detail' todo.task.id %}" style="color: inherit;">View Task <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center;">No tasks yet.</p>
+                {% endfor %}
+            </div>
+        </aside>
+        {% endif %}
+    </div>
+
+    <script>
+        const toggle = document.getElementById('nav-toggle');
+        const links = document.getElementById('nav-links');
+
+        toggle.addEventListener('click', () => {
+            links.classList.toggle('active');
+            const icon = toggle.querySelector('i');
+            if (links.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-xmark');
+            } else {
+                icon.classList.remove('fa-xmark');
+                icon.classList.add('fa-bars');
+            }
+        });
+    </script>
+</body>
+</html>
