@@ -17,11 +17,11 @@ jobs:
         python-version: "3.12"
     - name: Install Linting Tools
       run: |
-        pip install flake8 black isort
+        pip install "flake8==7.0.0" "black==24.4.2" "isort==5.13.2"
     - name: Run Flake8
       run: flake8 .
     - name: Run Black Check
-      run: black --check .
+      run: black --check --line-length=88 .
     - name: Run Isort Check
       run: isort --check-only .
 
