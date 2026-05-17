@@ -133,7 +133,9 @@ def task_detail(request, task_id):
     else:
         form = CommentForm()
 
-    user_submission = TaskSubmission.objects.filter(task=task, user=request.user).first()
+    user_submission = TaskSubmission.objects.filter(
+        task=task, user=request.user
+    ).first()
     submissions = TaskSubmission.objects.filter(task=task)
     submitted_users = [s.user for s in submissions]
 
@@ -215,6 +217,7 @@ def reject_task(request, task_id):
     task.save()
     return redirect("superuser_dashboard")
 
+
 @user_passes_test(is_superuser)
 def delete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
@@ -257,6 +260,8 @@ def add_todo(request):
         if text:
             PersonalTodo.objects.create(user=request.user, text=text)
     return redirect(request.META.get("HTTP_REFERER", "dashboard"))
+
+
 @login_required
 def submit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
@@ -287,7 +292,9 @@ def submit_task(request, task_id):
             # Merge all messages into a final comment
             final_message = "📢 FINAL SUBMISSION SUMMARY:\n"
             for sub in all_submissions:
-                final_message += f"\n--- {sub.user.username}'s Report ---\n{sub.message}\n"
+                final_message += (
+                    f"\n--- {sub.user.username}'s Report ---\n{sub.message}\n"
+                )
 
             Comment.objects.create(task=task, user=request.user, text=final_message)
 

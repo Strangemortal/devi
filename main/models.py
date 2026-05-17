@@ -63,9 +63,7 @@ class PersonalTodo(models.Model):
 
 
 class TaskSubmission(models.Model):
-    task = models.ForeignKey(
-        Task, on_delete=models.CASCADE, related_name="submissions"
-    )
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="submissions")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
     submitted_at = models.DateTimeField(auto_now_add=True)
